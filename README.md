@@ -1,2 +1,4 @@
 # design-url-shortener
-How to design a url shortener service on docker.
+Simple url shortener design service on Docker.
+
+![url-shortener-design](design_scheme.png)
