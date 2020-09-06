@@ -1,0 +1,392 @@
+version: '3.4'
+volumes:
+  prometheus_data: {}
+  grafana_data: {}
+
+networks:
+  default:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16
+
+services:
+  queue:
+    image: rabbitmq:3-management
+    container_name: queue
+    environment:
+      RABBITMQ_ERLANG_COOKIE: 'secret cookie here'
+      RABBITMQ_DEFAULT_USER: 'admin'
+      RABBITMQ_DEFAULT_PASS: '13656195'
+    ports:
+      - 5672:5672
+      - 15672:15672
+    networks:
+      default:
+        ipv4_address: 172.28.1.110
+
+  cache:
+    image: redis:latest
+    container_name: cache
+    ports:
+      - 6379:6379
+    volumes:
+      - ./cache-service/config/redis.conf:/redis.conf
+    command: ["redis-server", "/redis.conf"]
+    networks:
+      default:
+        ipv4_address: 172.28.1.112
+
+  kgs_server1:
+    image: acim/go-reflex
+    restart: always
+    container_name: kgs_server1
+    depends_on:
+      - db_lb_master
+      - db_lb_slave
+      - cache
+    environment:
+      - RACE_DETECTOR=1
+      - RUN_ARGS=server
+    volumes:
+      - ./kg-service:/app
+    working_dir: /app
+    command: reflex -r './*.go' -s -- sh -c 'go run .'
+    networks:
+      default:
+        ipv4_address: 172.28.2.100
+
+  kgs_server2:
+    image: acim/go-reflex
+    restart: always
+    container_name: kgs_server2
+    depends_on:
+      - db_lb_master
+      - db_lb_slave
+      - cache
+    environment:
+      - RACE_DETECTOR=1
+      - RUN_ARGS=server
+    volumes:
+      - ./kg-service:/app
+    working_dir: /app
+    command: reflex -r './*.go' -s -- sh -c 'go run .'
+    networks:
+      default:
+        ipv4_address: 172.28.2.101
+
+  kgs_lb_master:
+    image: goldenroute/keepalived-haproxy:latest
+    container_name: kgs_lb_master
+    restart: always
+    privileged: true
+    environment:
+      VIRTUAL_ROUTER_ID: "47"
+      PRIORITY: "101"
+      VIRTUAL_IP: "172.28.2.20"
+      VIRTUAL_MASK: "24"
+    depends_on:
+      - kgs_server1
+      - kgs_server2
+    ports:
+      - 1940:1936
+    volumes:
+      - ./kg-service/config/keepalived/master/keepalived.conf:/keepalived/keepalived.conf
+      - ./kg-service/config/haproxy/master/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    networks:
+      default:
+        ipv4_address: 172.28.2.102
+
+  kgs_lb_slave:
+    image: goldenroute/keepalived-haproxy:latest
+    container_name: kgs_lb_slave
+    restart: always
+    privileged: true
+    environment:
+      VIRTUAL_ROUTER_ID: "46"
+      PRIORITY: "100"
+      VIRTUAL_IP: "172.28.2.20"
+      VIRTUAL_MASK: "24"
+    depends_on:
+      - kgs_server1
+      - kgs_server2
+    ports:
+      - 1941:1936
+    volumes:
+      - ./kg-service/config/keepalived/slave/keepalived.conf:/keepalived/keepalived.conf
+      - ./kg-service/config/haproxy/slave/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    networks:
+      default:
+        ipv4_address: 172.28.2.103
+
+  app_server1:
+    image: acim/go-reflex
+    restart: always
+    container_name: app_server1
+    depends_on:
+      - db_lb_master
+      - db_lb_slave
+    environment:
+      - RACE_DETECTOR=1
+      - RUN_ARGS=server
+    volumes:
+      - ./main-service:/app
+    working_dir: /app
+    command: reflex -r './*.go' -s -- sh -c 'go run .'
+    networks:
+      default:
+        ipv4_address: 172.28.1.100
+
+  app_server2:
+    image: acim/go-reflex
+    restart: always
+    container_name: app_server2
+    depends_on:
+      - db_lb_master
+      - db_lb_slave
+    environment:
+      - RACE_DETECTOR=1
+      - RUN_ARGS=server
+    volumes:
+      - ./main-service:/app
+    working_dir: /app
+    command: reflex -r './*.go' -s -- sh -c 'go run .'
+    networks:
+      default:
+        ipv4_address: 172.28.1.101
+
+  app_server3:
+    image: acim/go-reflex
+    restart: always
+    container_name: app_server3
+    depends_on:
+      - db_lb_master
+      - db_lb_slave
+    environment:
+      - RACE_DETECTOR=1
+      - RUN_ARGS=server
+    volumes:
+      - ./main-service:/app
+    working_dir: /app
+    command: reflex -r './*.go' -s -- sh -c 'go run .'
+    networks:
+      default:
+        ipv4_address: 172.28.1.102
+
+  app_server4:
+    image: acim/go-reflex
+    restart: always
+    container_name: app_server4
+    depends_on:
+      - db_lb_master
+      - db_lb_slave
+    environment:
+      - RACE_DETECTOR=1
+      - RUN_ARGS=server
+    volumes:
+      - ./main-service:/app
+    working_dir: /app
+    command: reflex -r './*.go' -s -- sh -c 'go run .'
+    networks:
+      default:
+        ipv4_address: 172.28.1.103
+
+  app_lb_master:
+    image: goldenroute/keepalived-haproxy:latest
+    container_name: app_lb_master
+    restart: always
+    privileged: true
+    environment:
+      VIRTUAL_ROUTER_ID: "51"
+      PRIORITY: "101"
+      VIRTUAL_IP: "172.28.1.20"
+      VIRTUAL_MASK: "24"
+    depends_on:
+      - app_server1
+      - app_server2
+    ports:
+      - 1936:1936
+    volumes:
+      - ./main-service/config/keepalived/master/keepalived.conf:/keepalived/keepalived.conf
+      - ./main-service/config/haproxy/master/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    networks:
+      default:
+        ipv4_address: 172.28.1.104
+
+  app_lb_slave:
+    image: goldenroute/keepalived-haproxy:latest
+    container_name: app_lb_slave
+    restart: always
+    privileged: true
+    environment:
+      VIRTUAL_ROUTER_ID: "50"
+      PRIORITY: "100"
+      VIRTUAL_IP: "172.28.1.20"
+      VIRTUAL_MASK: "24"
+    depends_on:
+      - app_server3
+      - app_server4
+    ports:
+      - 1937:1936
+    volumes:
+      - ./main-service/config/keepalived/slave/keepalived.conf:/keepalived/keepalived.conf
+      - ./main-service/config/haproxy/slave/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    networks:
+      default:
+        ipv4_address: 172.28.1.105
+
+  db_server1:
+    image: hauptmedia/mariadb:10.1
+    container_name: db_server1
+    hostname: db_server1
+    restart: always
+    ports:
+      - 13306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=ush@1234
+      - REPLICATION_PASSWORD=ush@1234
+      - MYSQL_DATABASE=ush_db
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=ush@1234
+      - GALERA=On
+      - NODE_NAME=db_server1
+      - CLUSTER_NAME=maria_cluster
+      - CLUSTER_ADDRESS=gcomm://
+    command: --wsrep-new-cluster
+    networks:
+      default:
+        ipv4_address: 172.28.1.106
+
+  db_server2:
+    image: hauptmedia/mariadb:10.1
+    container_name: db_server2
+    hostname: db_server2
+    restart: always
+    links:
+      - db_server1
+    ports:
+      - 23306:3306
+    environment:
+      - REPLICATION_PASSWORD=ush@1234
+      - GALERA=On
+      - NODE_NAME=db_server2
+      - CLUSTER_NAME=maria_cluster
+      - CLUSTER_ADDRESS=gcomm://db_server1
+    networks:
+      default:
+        ipv4_address: 172.28.1.107
+
+  db_lb_master:
+    image: goldenroute/keepalived-haproxy:latest
+    container_name: db_lb_master
+    restart: always
+    privileged: true
+    environment:
+      VIRTUAL_ROUTER_ID: "49"
+      PRIORITY: "101"
+      VIRTUAL_IP: "172.28.1.21"
+      VIRTUAL_MASK: "24"
+    depends_on:
+      - db_server1
+      - db_server2
+    ports:
+      - 1938:1936
+    volumes:
+      - ./db-service/config/keepalived/master/keepalived.conf:/keepalived/keepalived.conf
+      - ./db-service/config/haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    networks:
+      default:
+        ipv4_address: 172.28.1.108
+
+  db_lb_slave:
+    image: goldenroute/keepalived-haproxy:latest
+    container_name: db_lb_slave
+    restart: always
+    privileged: true
+    environment:
+      VIRTUAL_ROUTER_ID: "48"
+      PRIORITY: "100"
+      VIRTUAL_IP: "172.28.1.21"
+      VIRTUAL_MASK: "24"
+    ports:
+      - 1939:1936
+    depends_on:
+      - db_server1
+      - db_server2
+    volumes:
+      - ./db-service/config/keepalived/slave/keepalived.conf:/keepalived/keepalived.conf
+      - ./db-service/config/haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    networks:
+      default:
+        ipv4_address: 172.28.1.109
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: unless-stopped
+    privileged: true
+    volumes:
+      - ./prometheus-service/config/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    ports:
+      - 9090:9090
+    links:
+      - cadvisor:cadvisor
+      - node-exporter:node-exporter
+    networks:
+      default:
+        ipv4_address: 172.28.1.113
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    restart: unless-stopped
+    privileged: true
+    ports:
+      - 9100:9100
+    networks:
+      default:
+        ipv4_address: 172.28.1.114
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    privileged: true
+    links:
+      - prometheus:prometheus
+    depends_on:
+      - prometheus
+    ports:
+      - 3000:3000
+    volumes:
+      - ./grafana-service/data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=13656195
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SMTP_ENABLED=true
+      - GF_SMTP_HOST=smtp.gmail.com:587
+      - GF_SMTP_USER=ammorteza.g@gmail.com
+      - GF_SMTP_PASSWORD=13656195
+      - GF_SMTP_FROM_ADDRESS=ammorteza.g@gmail.com
+    networks:
+      default:
+        ipv4_address: 172.28.1.115
+
+  cadvisor:
+    image: google/cadvisor:latest
+    container_name: cadvisor
+    restart: unless-stopped
+    privileged: true
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    expose:
+      - 8080
+    networks:
+      default:
+        ipv4_address: 172.28.1.116

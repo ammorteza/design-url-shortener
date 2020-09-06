@@ -1,0 +1,10 @@
+global:
+  scrape_interval: 120s
+  evaluation_interval: 120s
+  external_labels:
+    monitor: 'url-shortener'
+scrape_configs:
+  - job_name: 'prometheus'
+    scrape_interval: 120s
+    static_configs:
+      - targets: ['localhost:9090', 'cadvisor:8080', 'node-exporter:9100']
