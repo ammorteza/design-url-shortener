@@ -18,7 +18,7 @@ func New(eventName string) job_queue.JobQueue{
 	var err error
 	for {
 		log.Println("trying to dial on rabbitMq ...")
-		conn, err = amqp.Dial("amqp://admin:13656195@172.28.1.110:5672")
+		conn, err = amqp.Dial("amqp://admin:admin@172.28.1.110:5672")
 		if err == nil{
 			break
 		}
