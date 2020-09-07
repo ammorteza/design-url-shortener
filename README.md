@@ -1,5 +1,5 @@
 # design-url-shortener
-Designing a symple URL Shortener service on Docker.
+Designing a simple URL Shortener service on Docker.
 
 > URL Shortener service is used to short a long url, users are redirected to original url by using `Short Link`.
 
