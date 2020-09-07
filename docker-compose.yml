@@ -17,7 +17,7 @@ services:
     environment:
       RABBITMQ_ERLANG_COOKIE: 'secret cookie here'
       RABBITMQ_DEFAULT_USER: 'admin'
-      RABBITMQ_DEFAULT_PASS: '13656195'
+      RABBITMQ_DEFAULT_PASS: 'admin'
     ports:
       - 5672:5672
       - 15672:15672
@@ -364,13 +364,13 @@ services:
     volumes:
       - ./grafana-service/data:/var/lib/grafana
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=13656195
+      - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_USERS_ALLOW_SIGN_UP=false
       - GF_SMTP_ENABLED=true
       - GF_SMTP_HOST=smtp.gmail.com:587
-      - GF_SMTP_USER=ammorteza.g@gmail.com
-      - GF_SMTP_PASSWORD=13656195
-      - GF_SMTP_FROM_ADDRESS=ammorteza.g@gmail.com
+      - GF_SMTP_USER=example@gmail.com
+      - GF_SMTP_PASSWORD=admin
+      - GF_SMTP_FROM_ADDRESS=example@gmail.com
     networks:
       default:
         ipv4_address: 172.28.1.115
