@@ -1,5 +1,6 @@
 # design-url-shortener
-Designing a symple URL Shortener service on Docker.
+
+Designing a simple URL Shortener service on Docker.
 
 > URL Shortener service is used to short a long url, users are redirected to original url by using `Short Link`.
 
@@ -11,16 +12,16 @@ app_server1       (Url Shortener Service)                   (172.28.1.100)
 app_server2       (Url Shortener Service)                   (172.28.1.101)
 app_server3       (Url Shortener Service)                   (172.28.1.102)
 app_server4       (Url Shortener Service)                   (172.28.1.103)
-app_lb_master     (Haproxy + Keepalived)                    (172.28.1.104:1936)
-app_lb_slave      (Haproxy + Keepalived)                    (172.28.1.105:1937)
+app_lb_master     (Haproxy + Keepalived)                    (172.28.1.104:1936)     VIP:172.28.1.20
+app_lb_slave      (Haproxy + Keepalived)                    (172.28.1.105:1937)     VIP:172.28.1.20
 kg_server1        (Key Generation Service)                  (172.28.2.100)
 kg_server2        (Key Generation Service)                  (172.28.2.101)
-kg_lb_master      (Haproxy + Keepalived)                    (172.28.2.102:1940)
-kg_lb_slave       (Haproxy + Keepalived)                    (172.28.2.103:1941)
+kg_lb_master      (Haproxy + Keepalived)                    (172.28.2.102:1940)     VIP:172.28.2.20
+kg_lb_slave       (Haproxy + Keepalived)                    (172.28.2.103:1941)     VIP:172.28.2.20
 db_server1        (MariaDB + Galera)                        (172.28.1.106:13306)
 db_server2        (MariaDB + Galera)                        (172.28.1.107:23306)
-db_lb_master      (Haproxy + Keepalived)                    (172.28.1.108:1938)
-db_lb_slave       (Haproxy + Keepalived)                    (172.28.1.108:1939)
+db_lb_master      (Haproxy + Keepalived)                    (172.28.1.108:1938)     VIP:172.28.1.21
+db_lb_slave       (Haproxy + Keepalived)                    (172.28.1.108:1939)     VIP:172.28.1.21
 queue             (RabbitMQ)                                (172.28.1.110:5672)
 cache             (Redis)                                   (172.28.1.112:6379)
 prometheus        (Prometheus)                              (172.28.1.113:9090)
