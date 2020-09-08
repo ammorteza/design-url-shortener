@@ -87,32 +87,32 @@ make test
 ## Monitoring
 Monitoring HAProxy stats in your browser
 
-> main service master loud balancer stats
+> main service master load balancer stats
 ```
 http://172.28.1.104:1936/haproxy?stats
 ```
 
-> main service slave loud balancer stats
+> main service slave load balancer stats
 ```
 http://172.28.1.105:1936/haproxy?stats
 ```
 
-> key generation service master loud balancer stats
+> key generation service master load balancer stats
 ```
 http://172.28.2.102:1936/haproxy?stats
 ```
 
-> key generation service slave loud balancer stats
+> key generation service slave load balancer stats
 ```
 http://172.28.2.103:1936/haproxy?stats
 ```
 
-> database service master loud balancer stats
+> database service master load balancer stats
 ```
 http://172.28.1.108:1936/haproxy?stats
 ```
 
-> database service slave loud balancer stats
+> database service slave load balancer stats
 ```
 http://172.28.1.109:1936/haproxy?stats
 ```
