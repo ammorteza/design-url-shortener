@@ -4,7 +4,7 @@ Designing a simple URL Shortener service on Docker.
 
 > URL Shortener service is used to short a long url, users are redirected to original url by using `Short Link`.
 
-![url-shortener-design](design_scheme.png)
+![url shortener design](design_scheme.png)
 
 ## Containers
 ```
@@ -91,46 +91,55 @@ Monitoring HAProxy stats in your browser
 ```
 http://172.28.1.104:1936/haproxy?stats
 ```
+![main service master haproxy](main-service/config/haproxy/master/haproxy.png)
 
 > main service slave load balancer stats
 ```
 http://172.28.1.105:1936/haproxy?stats
 ```
+![main service slave haproxy](main-service/config/haproxy/slave/haproxy.png)
 
 > key generation service master load balancer stats
 ```
 http://172.28.2.102:1936/haproxy?stats
 ```
+![key generation slave haproxy](kg-service/config/haproxy/master/haproxy.png)
 
 > key generation service slave load balancer stats
 ```
 http://172.28.2.103:1936/haproxy?stats
 ```
+![key generation service slave haproxy](kg-service/config/haproxy/slave/haproxy.png)
 
-> database service master load balancer stats
+> database services master load balancer stats
 ```
 http://172.28.1.108:1936/haproxy?stats
 ```
+![database service master haproxy](db-service/config/haproxy/master_haproxy.png)
 
-> database service slave load balancer stats
+> database services slave load balancer stats
 ```
 http://172.28.1.109:1936/haproxy?stats
 ```
+![database service slave haproxy](db-service/config/haproxy/slave_haproxy.png)
 
 > rabbitMQ 
 ```
 http://172.28.1.110:15672
 ```
+![rabbitMQ](main-service/rabbitmq.png)
 
 > prometheus 
 ```
 http://172.28.1.113:9090
 ```
+![prometheus](prometheus-service/prometheus.png)
 
 > grafana 
 ```
 http://172.28.1.115:3000
 ```
+![grafana](grafana-service/grafana.png)
 
 **Note:** Dashboards account
 ```
